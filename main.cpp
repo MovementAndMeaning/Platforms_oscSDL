@@ -78,13 +78,16 @@ void close()
 
 int main (int argc, char* args[])
 {
-	if (!init()) 
+    
+    Uint32 myCustomEvent = SDL_RegisterEvents(1);
+    
+	if (!init())
 	{
 		printf("failed to init!\n");
 	}
 	else
 	{
-		if (!loadMedia()) 
+		if (!loadMedia())
 		{
 			printf("failed to load media!\n");
 		}
@@ -108,6 +111,23 @@ int main (int argc, char* args[])
 				{
 					quit = true;
 				}
+                if (e.type ==SDL_KEYDOWN)
+                {
+                    //trigger "custom event"
+                    if (myCustomEvent != ((Uint32)-1))
+                    {
+                        SDL_Event event;
+                        SDL_zero(event);
+                        event.type = myCustomEvent;
+                        SDL_PushEvent(&event);
+                        printf("pushing custom kbd event to queue\n");
+                    }
+                
+                }
+                if (e.type == myCustomEvent)
+                {
+                    printf("received custom kbd event!\n");
+                }
 
 			}
 			// Read OSC here
