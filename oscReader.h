@@ -1,6 +1,6 @@
 //--------------------------------------------------------------------------------------------------
 //
-//  File:       oscReaderThread.cpp
+//  File:       oscReader.h
 //
 //  Project:    oscSDL
 //
@@ -36,4 +36,32 @@
 //
 //--------------------------------------------------------------------------------------------------
 
-#include "oscReaderThread.h"
+#ifndef OSC_READER_THREAD
+#define OSC_READER_THREAD
+
+#include <iostream>
+#include "OscPacketListener.h"
+#include "UdpSocket.h"
+#include "SDL.h"
+#include "SDL_thread.h"
+
+class oscReader : public osc::OscPacketListener {
+
+private:
+    UdpListeningReceiveSocket* mySocket;
+    bool socketHasShutdown;
+    
+public:
+    
+    void setup(int port);
+    ~oscReader();
+    virtual void ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& ep);
+    static void* startThread(void* readerInstance);
+    
+
+    void shutdown();
+    
+};
+
+
+#endif /* defined(OSC_READER_THREAD) */

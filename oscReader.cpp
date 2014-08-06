@@ -1,10 +1,12 @@
 //--------------------------------------------------------------------------------------------------
 //
-//  File:       oscReaderThread.h
+//  File:       oscReader.cpp
 //
 //  Project:    oscSDL
 //
 //  Contains:   simple thread class for osc Reader
+//              largely based of ofxOscReader
+//      https://github.com/openframeworks/openFrameworks/blob/master/addons/ofxOsc/
 //
 //  Written by: Johnty Wang
 //
@@ -36,9 +38,48 @@
 //
 //--------------------------------------------------------------------------------------------------
 
-#ifndef OSC_READER_THREAD
-#define OSC_READER_THREAD
+#include "oscReader.h"
 
-#include <iostream>
+void oscReader::setup(int port) {
+    if (mySocket)
+        shutdown();
+    
+    
+    socketHasShutdown = false;
+    mySocket = new UdpListeningReceiveSocket(IpEndpointName(IpEndpointName::ANY_ADDRESS, port), this);
+    
+    pthread_create(&thread, NULL, &oscReader::startThread, (void*)this);
+    
+}
 
-#endif /* defined(OSC_READER_THREAD) */
+oscReader::~oscReader() {
+    shutdown();
+}
+
+void oscReader::ProcessMessage(const osc::ReceivedMessage& m, const IpEndpointName& ep)
+{
+    printf("message received!\n");
+}
+
+
+int oscReader::startThread(void *readerInstance) {
+    printf("oscReader::starting osc reader thread!\n");
+    oscReader* instance = (oscReader*) readerInstance;
+    
+    instance->mySocket->Run();
+    
+    
+    printf("oscReader::shutting down\n");
+    
+    return 0;
+}
+
+void oscReader::shutdown()
+{
+    if (mySocket) {
+        mySocket->AsynchronousBreak();
+    }
+    
+    delete  mySocket;
+    mySocket = NULL;
+}

@@ -2,9 +2,7 @@
 #include "SDL.h"
 
 //OSC specific includes
-#include "OscReceivedElements.h"
-#include "OscPacketListener.h"
-#include "UdpSocket.h"
+#include "ofxOscReceiver.h"
 
 
 SDL_Window* gWindow = NULL;
@@ -46,8 +44,6 @@ bool init()
 	}
 
 
-	//osc init
-
 	return success;
 }
 
@@ -81,6 +77,14 @@ int main (int argc, char* args[])
     
     Uint32 myCustomEvent = SDL_RegisterEvents(1);
     
+    
+    //start OSC reader thread
+    
+    printf("main::creating thread\n");
+    //SDL_Thread* osc_thread = SDL_CreateThread(oscReaderThread::threadFunction, "oscThread", NULL);
+    ofxOscReceiver myReader;
+    myReader.setup(7000);
+    
 	if (!init())
 	{
 		printf("failed to init!\n");
@@ -98,9 +102,6 @@ int main (int argc, char* args[])
 
 		bool quit = false;
 		SDL_Event e;
-
-
-		
 
 		while (!quit) 
 		{
@@ -128,11 +129,19 @@ int main (int argc, char* args[])
                 {
                     printf("received custom kbd event!\n");
                 }
-
 			}
-			// Read OSC here
+            if (myReader.hasWaitingMessages()) {
+                ofxOscMessage msg;
+                myReader.getNextMessage(&msg);
+                printf("received osc message with tag =%s\n", msg.getAddress().c_str());
+                for (int i=0; i<msg.getNumArgs(); i++) {
+                    printf("arg%i type = %s\n", i, msg.getArgTypeName(i).c_str());
+                }
+                
+            }
 		}
 	}
+    
 
 	close();
 
