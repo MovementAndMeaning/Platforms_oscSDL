@@ -78,10 +78,7 @@ int main (int argc, char* args[])
     Uint32 myCustomEvent = SDL_RegisterEvents(1);
     
     
-    //start OSC reader thread
-    
-    printf("main::creating thread\n");
-    //SDL_Thread* osc_thread = SDL_CreateThread(oscReaderThread::threadFunction, "oscThread", NULL);
+    //Set up OSC reader on port 7000
     ofxOscReceiver myReader;
     myReader.setup(7000);
     
@@ -130,6 +127,8 @@ int main (int argc, char* args[])
                     printf("received custom kbd event!\n");
                 }
 			}
+            
+            //check for messages, and parse them
             if (myReader.hasWaitingMessages()) {
                 ofxOscMessage msg;
                 myReader.getNextMessage(&msg);
