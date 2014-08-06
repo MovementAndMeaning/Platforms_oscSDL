@@ -3,6 +3,7 @@
 
 //OSC specific includes
 #include "ofxOscReceiver.h"
+#include "ofxOscSender.h" //just for sending example
 
 
 SDL_Window* gWindow = NULL;
@@ -74,11 +75,7 @@ void close()
 
 int main (int argc, char* args[])
 {
-    
-    Uint32 myCustomEvent = SDL_RegisterEvents(1);
-    
-    
-    //Set up OSC reader on port 7000
+    //OSC SPECIFIC: Set up OSC reader on port 7000
     ofxOscReceiver myReader;
     myReader.setup(7000);
     
@@ -111,24 +108,27 @@ int main (int argc, char* args[])
 				}
                 if (e.type ==SDL_KEYDOWN)
                 {
-                    //trigger "custom event"
-                    if (myCustomEvent != ((Uint32)-1))
+                    if (e.key.keysym.sym == SDLK_s)
                     {
-                        SDL_Event event;
-                        SDL_zero(event);
-                        event.type = myCustomEvent;
-                        SDL_PushEvent(&event);
-                        printf("pushing custom kbd event to queue\n");
+                        //OSC SPECIFIC: if we press s, send a test OSC message (to ourselves)
+                        // below shows initialization of a sender, creation and sending of a message
+                        ofxOscSender mySender;
+                        mySender.setup("127.0.0.1", 7000); //send to self
+                        
+                        ofxOscMessage msg;
+                        msg.setAddress("/testMsg");
+                        msg.addFloatArg(1.23);
+                        msg.addStringArg("hello world");
+                        msg.addIntArg(3);
+                        mySender.sendMessage(msg);
+                        
+                        
+                        
                     }
-                
-                }
-                if (e.type == myCustomEvent)
-                {
-                    printf("received custom kbd event!\n");
                 }
 			}
             
-            //check for messages, and parse them
+            //OSC SPECIFIC: check for messages, and parse them
             if (myReader.hasWaitingMessages()) {
                 ofxOscMessage msg;
                 myReader.getNextMessage(&msg);
